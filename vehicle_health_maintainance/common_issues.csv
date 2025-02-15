@@ -1,0 +1,4 @@
+"IssueID","IssueCategory","Frequency","Severity","ExampleVideoURL"
+"1","Fuel Sensor Fault","23","High",""
+"2","LPG System Leak","17","Critical",""
+"3","Ignition Coil Failure","12","Medium",""

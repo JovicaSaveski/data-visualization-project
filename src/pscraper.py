@@ -264,7 +264,7 @@ def main():
     all_data = []
 
     # Process pages 1 to 12 sequentially
-    for page_number in range(1, 13):
+    for page_number in range(13, 23):
         print(f"Processing page {page_number}...")
         listing_urls = scrape_search_results(page_number)  # Get listing URLs for the current page
 
@@ -285,7 +285,7 @@ def main():
     # Save the collected data to a CSV file after processing all pages
     if all_data:
         df = pd.DataFrame(all_data).rename(columns=field_mapping)
-        df.to_csv('sequential_car_listings.csv', index=False)
+        df.to_csv('sequential_car_listings2.csv', index=False)
 
 if __name__ == "__main__":
     main()

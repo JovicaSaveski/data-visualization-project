@@ -24,13 +24,23 @@ def extract_price(text):
                 continue
     return 0
 
-# Load the CSV file
+# Load both CSV files
 try:
-    df = pd.read_csv('sequential_car_listings.csv')
-    print(f"Loaded data shape: {df.shape}")
+    df1 = pd.read_csv('sequential_car_listings.csv')
+    df2 = pd.read_csv('sequential_car_listings2.csv')
+    print(f"Loaded data shapes: df1={df1.shape}, df2={df2.shape}")
+    
+    # Concatenate the dataframes
+    df = pd.concat([df1, df2], ignore_index=True)
+    print(f"Combined shape: {df.shape}")
+    
 except Exception as e:
-    print(f"Error loading CSV: {e}")
+    print(f"Error loading CSV files: {e}")
     exit(1)
+
+# Remove duplicates based on URL
+df = df.drop_duplicates(subset='url', keep='first')
+print(f"Shape after removing duplicates: {df.shape}")
 
 # Only fill missing or zero prices
 df['price_numeric'] = df.apply(
@@ -38,9 +48,21 @@ df['price_numeric'] = df.apply(
     axis=1
 )
 
-# Rest of the cleaning code remains the same
-...
+# Basic cleaning
+df['year'] = pd.to_numeric(df['year'], errors='coerce')
+df['views'] = pd.to_numeric(df['views'], errors='coerce')
+
+# Standardize currency to EUR if possible
+df['currency'] = df['currency'].fillna('EUR')
+df['currency'] = df['currency'].str.upper()
 
 # Save the cleaned data
 df.to_csv('sequential_car_listings_cleaned.csv', index=False)
 print("Data cleaning complete. Cleaned data saved to 'sequential_car_listings_cleaned.csv'")
+
+# Print some statistics
+print("\nBasic statistics:")
+print(f"Total listings: {len(df)}")
+print(f"Unique years: {df['year'].nunique()}")
+print(f"Average price: {df['price_numeric'].mean():.2f}")
+print(f"Missing prices: {df['price_numeric'].isna().sum()}")
