@@ -1,4 +1,5 @@
 Data visualization study project
 
 
-![screenshot](image.png)
+
+![screen](image-1.png)
