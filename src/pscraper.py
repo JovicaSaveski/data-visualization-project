@@ -45,7 +45,7 @@ field_mapping = {
             'price_currency': 'currency'
         }
 
-page_number = '12'
+page_number = '1'
 
 def get_headers():
     ua = UserAgent()
@@ -262,39 +262,30 @@ def scrape_search_results(page_number):
 
 def main():
     all_data = []
-    listing_urls = scrape_search_results(page_number)  # Get all listing URLs
-    
-    # Configure parallelism
-    max_workers = 5  # Be polite with concurrent requests
-    batch_size = 20  # Process in batches to avoid memory issues
-    delay_between_batches = 10  # Seconds
 
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = []
-        for i, url in enumerate(listing_urls):
-            # Submit tasks with staggered start
-            future = executor.submit(scrape_listing, url)
-            futures.append(future)
-            
-            # Add delay between batches
-            if (i + 1) % batch_size == 0:
-                time.sleep(delay_between_batches)
-        
-        # Process completed tasks
-        for future in concurrent.futures.as_completed(futures):
-            try:
-                result = future.result()
-                if result:
-                    all_data.append(result)
-            except Exception as e:
-                print(f"Error in future: {str(e)}")
+    # Process pages 1 to 12 sequentially
+    for page_number in range(1, 13):
+        print(f"Processing page {page_number}...")
+        listing_urls = scrape_search_results(page_number)  # Get listing URLs for the current page
 
-    # Rest of processing remains the same
+        # Process each listing in parallel for this page
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            futures = [executor.submit(scrape_listing, url) for url in listing_urls]
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    result = future.result()
+                    if result:
+                        all_data.append(result)
+                except Exception as e:
+                    print(f"Error scraping listing: {e}")
+
+        # Optional: add a delay between pages to avoid overwhelming the server
+        time.sleep(5)
+
+    # Save the collected data to a CSV file after processing all pages
     if all_data:
         df = pd.DataFrame(all_data).rename(columns=field_mapping)
-        df.to_csv('parallel_car_listings'+page_number+'.csv', index=False)
+        df.to_csv('sequential_car_listings.csv', index=False)
 
 if __name__ == "__main__":
     main()
-
-
